@@ -12,11 +12,12 @@
 int scan_and_send() {
 
     inquiry_info *ii = NULL;
-    char addr[19] = { 0 };
+    char str_addr[19] = { 0 };
     char name[248] = { 0 };
 
     const int dev_id = hci_get_route(NULL);
     const int sock = hci_open_dev(dev_id);
+    int s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
     if (dev_id < 0 || sock < 0) {
         perror("opening socket");
         exit(1);
@@ -31,19 +32,26 @@ int scan_and_send() {
     if( num_rsp < 0 ) perror("hci_inquiry");
 
     for (int i = 0; i < num_rsp; i++) {
-        ba2str(&ii[i].bdaddr, addr);
+        ba2str(&ii[i].bdaddr, str_addr);
         memset(name, 0, sizeof(name));
         if (hci_read_remote_name(sock, &ii[i].bdaddr, sizeof(name), name, 0) < 0)
             strcpy(name, "[unknown]");
-        printf("%s  %s\n", addr, name);
+
+        printf("%s  %s\n", str_addr, name);
+        if (strcmp(name, "raspberry_bastien") == 0) {
+            break;
+        }
     }
 
 
-
+    struct sockaddr_rc addr = { 0 };
+    addr.rc_family = AF_BLUETOOTH;
+    addr.rc_channel = (uint8_t) 1;
+    str2ba( str_addr, &addr.rc_bdaddr );
 
 
     // connect to server
-    int status = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
+    int status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
 
     // send a message
     if( status == 0 ) {
@@ -57,8 +65,8 @@ int scan_and_send() {
 
 
 
-    free( ii );
-    close( sock );
+    // free( ii );
+    // close( sock );
     return 0;
 
 }
