@@ -1,0 +1,3 @@
+/home/bastien/Documents/Git/bftp/build/CMakeFiles/bftp.dir
+/home/bastien/Documents/Git/bftp/build/CMakeFiles/edit_cache.dir
+/home/bastien/Documents/Git/bftp/build/CMakeFiles/rebuild_cache.dir
