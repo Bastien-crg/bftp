@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
+#include <bluetooth/hci.h>
+#include <sys/ioctl.h>
 
 
 static void cmd_scan(int ctl, int hdev, char *opt)
@@ -11,16 +13,17 @@ static void cmd_scan(int ctl, int hdev, char *opt)
 
     dr.dev_id  = hdev;
     dr.dev_opt = SCAN_DISABLED;
+    
     if (!strcmp(opt, "iscan"))
         dr.dev_opt = SCAN_INQUIRY;
     else if (!strcmp(opt, "pscan"))
         dr.dev_opt = SCAN_PAGE;
     else if (!strcmp(opt, "piscan"))
         dr.dev_opt = SCAN_PAGE | SCAN_INQUIRY;
-
+    
     if (ioctl(ctl, HCISETSCAN, (unsigned long) &dr) < 0) {
-        fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n",
-                        hdev, strerror(errno), errno);
+        fprintf(stderr, "Can't set scan mode on hci%d\n",
+                        hdev);
         exit(1);
     }
 }
@@ -34,6 +37,11 @@ int server() {
     socklen_t opt = sizeof(rem_addr);
 
     // allocate socket
+    s = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+    
+    cmd_scan(s,0,"piscan");
+    printf("Device discovarable\n");
+
     s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
     // bind socket to port 1 of the first available
