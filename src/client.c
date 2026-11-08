@@ -26,8 +26,11 @@ int client() {
     ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
 
     const int num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
-    if( num_rsp < 0 ) perror("hci_inquiry");
-
+    if( num_rsp < 0 ) {
+        perror("hci_inquiry");
+    } else {
+        printf("%d device found\n", num_rsp);
+    }
     for (int i = 0; i < num_rsp; i++) {
         ba2str(&ii[i].bdaddr, str_addr);
         memset(name, 0, sizeof(name));
@@ -52,7 +55,7 @@ int client() {
     int status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
 
     // send a message
-    if( status == 0 ) {
+    if( status == -1 ) {
         status = write(sock, "hello!", 6);
     }
 
