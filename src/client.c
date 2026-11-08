@@ -35,7 +35,8 @@ int client() {
             strcpy(name, "[unknown]");
 
         printf("%s  %s\n", str_addr, name);
-        if (strcmp(name, "raspberry_bastien") == 0) {
+        if (strcmp(name, "bastien-Vostro-3591") == 0) {
+            printf("yp");
             break;
         }
     }
