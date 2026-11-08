@@ -5,6 +5,27 @@
 #include <bluetooth/rfcomm.h>
 
 
+static void cmd_scan(int ctl, int hdev, char *opt)
+{
+    struct hci_dev_req dr;
+
+    dr.dev_id  = hdev;
+    dr.dev_opt = SCAN_DISABLED;
+    if (!strcmp(opt, "iscan"))
+        dr.dev_opt = SCAN_INQUIRY;
+    else if (!strcmp(opt, "pscan"))
+        dr.dev_opt = SCAN_PAGE;
+    else if (!strcmp(opt, "piscan"))
+        dr.dev_opt = SCAN_PAGE | SCAN_INQUIRY;
+
+    if (ioctl(ctl, HCISETSCAN, (unsigned long) &dr) < 0) {
+        fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n",
+                        hdev, strerror(errno), errno);
+        exit(1);
+    }
+}
+
+
 int server() {
 
     struct sockaddr_rc loc_addr = { 0 }, rem_addr = { 0 };
