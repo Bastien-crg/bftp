@@ -13,9 +13,9 @@ int client() {
     char name[248] = { 0 };
 
     const int dev_id = hci_get_route(NULL);
-    const int sock = hci_open_dev(dev_id);
-    int s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-    if (dev_id < 0 || sock < 0) {
+    const int scan_sock = hci_open_dev(dev_id);
+    int con_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+    if (dev_id < 0 || scan_sock < 0) {
         perror("opening socket");
         exit(1);
     }
@@ -34,12 +34,11 @@ int client() {
     for (int i = 0; i < num_rsp; i++) {
         ba2str(&ii[i].bdaddr, str_addr);
         memset(name, 0, sizeof(name));
-        if (hci_read_remote_name(sock, &ii[i].bdaddr, sizeof(name), name, 0) < 0)
+        if (hci_read_remote_name(scan_sock, &ii[i].bdaddr, sizeof(name), name, 0) < 0)
             strcpy(name, "[unknown]");
 
         printf("%s  %s\n", str_addr, name);
-        if (strcmp(name, "bastien-Vostro-3591") == 0) {
-            printf("yp");
+        if (!strcmp(name, "bastien-Vostro-3591")) {
             break;
         }
     }
@@ -52,18 +51,21 @@ int client() {
 
 
     // connect to server
-    int status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
+    int status = connect(con_sock, (struct sockaddr *)&addr, sizeof(addr));
+
+    printf("connection status : %d\n",status);
 
     // send a message
-    if( status == -1 ) {
-        status = write(sock, "hello!", 6);
+    if( status == 0 ) {
+        status = write(con_sock, "hello!", 6);
     }
 
     if( status < 0 ) perror("uh oh");
 
 
     free( ii );
-    close( sock );
+    close( scan_sock );
+    close( con_sock );
     return 0;
 
 }
